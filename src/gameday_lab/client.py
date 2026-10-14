@@ -32,7 +32,7 @@ from __future__ import annotations
 import random
 from typing import Any
 
-from gameday_lab.breaker import BreakerState, Permit, SlidingWindowBreaker  # noqa: F401
+from gameday_lab.breaker import BreakerState, Permit, SlidingWindowBreaker
 from gameday_lab.errors import ErrorKind, classify, counts_toward_breaker  # noqa: F401
 from gameday_lab.retry import FullJitterBackoff, RetryBudget
 from gameday_lab.sim.contracts import (
@@ -147,11 +147,13 @@ class ResilientClient(BaseClient):
             if self.breakers[p].state is BreakerState.OPEN:
                 continue
             wait_s = self.cooldown_until[p] - now
-            if 0 < wait_s <= RATE_LIMIT_WAIT_MAX_S:
-                if (now + wait_s + self.min_time_left_s) <= call.deadline:
-                    if wait_s < best_wait:
-                        best_wait = wait_s
-                        best_provider = p
+            if (
+                0 < wait_s <= RATE_LIMIT_WAIT_MAX_S
+                and (now + wait_s + self.min_time_left_s) <= call.deadline
+                and wait_s < best_wait
+            ):
+                best_wait = wait_s
+                best_provider = p
 
         if best_provider is not None:
             call.state["idx"] = ladder.index(best_provider)
@@ -225,12 +227,14 @@ class ResilientClient(BaseClient):
         tries = call.state.get("tries", 1)
         if tries < self.max_attempts_per_provider:
             delay = self.backoff.delay(tries, retry_after=err.retry_after)
-            if (now + delay + self.min_time_left_s) <= call.deadline:
-                if self.budget.try_acquire_retry(now):
-                    action = self._send(call, provider, now, delay)
-                    if action is not None and not isinstance(action, GiveUp):
-                        call.state["tries"] = tries + 1
-                        return action
+            if (
+                (now + delay + self.min_time_left_s) <= call.deadline
+                and self.budget.try_acquire_retry(now)
+            ):
+                action = self._send(call, provider, now, delay)
+                if action is not None and not isinstance(action, GiveUp):
+                    call.state["tries"] = tries + 1
+                    return action
 
         # Fail over
         call.state["idx"] += 1

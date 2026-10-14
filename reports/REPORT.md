@@ -1,6 +1,6 @@
 # Lab 25B — Report
 
-**Họ tên / nhóm:** Kieu Dinh Doan  **Commit:** `HEAD`  **Điểm tự động (`make grade`):** 84.0 / 88 (88/88 khi tính cả phần hidden SLO)
+**Họ tên / nhóm:** Kiều Đình Đoàn - 2A202602936  **Commit:** `679ccee`  **Điểm tự động (`make grade`):** 84.0 / 88 (88/88 khi tính cả phần hidden SLO)
 
 ## 1. Kết quả Game Day (naive vs của bạn)
 
